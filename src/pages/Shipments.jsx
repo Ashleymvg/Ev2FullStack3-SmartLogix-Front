@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getShipment } from "../service/shipmentService";
+import { getShipments } from "../service/shipmentService";
 import { getSaveToken, getSaveUser } from "../service/authService";
 
 function ShipmentsPage() {
@@ -18,7 +18,7 @@ function ShipmentsPage() {
             setError("");
 
             try {
-                const response = await getShipment();
+                const response = await getShipments();
                 console.log(response);
                 setShipments(response);
             } catch (error) {

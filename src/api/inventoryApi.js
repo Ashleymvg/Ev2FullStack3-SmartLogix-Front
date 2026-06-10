@@ -1,10 +1,12 @@
-import { httpRequest } from "./httpClient"
+import { httpRequest } from "./httpClient";
 
-// El API recibe el header listo y ejecuta la solicitud HTTP.
-export function getInventoryRequest(authorizationHeader) {
-    return httpRequest("/api/inventory/items", {
-        headers: {
-            Authorization: authorizationHeader
-        }
-    })
+export function getInventoryRequest() {
+    return httpRequest("/api/inventory/items"); // Ajusta la ruta exacta de tu backend si es distinta
+}
+
+export function createInventoryItemRequest(itemData) {
+    return httpRequest("/api/inventory", {
+        method: "POST",
+        body: JSON.stringify(itemData)
+    });
 }

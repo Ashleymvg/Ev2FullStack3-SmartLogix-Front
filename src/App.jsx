@@ -4,7 +4,7 @@ import LoginPage from './pages/Login'
 import ShipmentsPage from './pages/Shipments'
 import OrderPage from './pages/Order'
 import InventoryPage from './pages/Inventory'
-import DashboardLayout from './layouts/DashboardLayout'
+import DashboardLayout from './layouts/DashboardLayout.jsx'
 import { getSaveToken, clearLogin } from './service/authService'
 
 function getRouterFromHash() {

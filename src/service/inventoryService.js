@@ -1,8 +1,9 @@
-import { getInventoryRequest } from "../api/inventoryApi"
-import { getRequiredAuthorizationHeader } from "./authService"
+import { getInventoryRequest, createInventoryItemRequest } from "../api/inventoryApi";
 
 export async function getInventory() {
-    // El service valida sesion antes de pedir datos al backend.
-    const authorizationHeader = getRequiredAuthorizationHeader()
-    return getInventoryRequest(authorizationHeader)
+    return await getInventoryRequest();
+}
+
+export async function createInventoryItem(itemData) {
+    return await createInventoryItemRequest(itemData);
 }
