@@ -1,44 +1,42 @@
-import { useEffect, useState } from "react";
+import { useShipments } from '../hooks/useShipments';
 
-import { getShipments } from "../service/shipmentService";
-import { getSaveToken, getSaveUser } from "../service/authService";
-
-function ShipmentsPage() {
-
-    const [shipments, setShipments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    const user = getSaveUser();
-
-    useEffect(() => {
-
-        async function loadShipment() {
-            setLoading(true);
-            setError("");
-
-            try {
-                const response = await getShipments();
-                console.log(response);
-                setShipments(response);
-            } catch (error) {
-                setError(error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadShipment();
-
-    }, []);
+export default function ShipmentsPage() {
+    const { shipments, loading, error, updateStatus } = useShipments();
 
     return (
-        <main>
-            <div>
-                Header
-            </div>
-        </main>
+        <div>
+            <h1 style={{ color: 'var(--text-h)' }}>Gestión de Envíos</h1>
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+
+            {loading ? <p>Cargando envíos...</p> : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', color: '#333' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '2px solid #ddd' }}>
+                            <th style={{ padding: '12px' }}>Seguimiento</th>
+                            <th style={{ padding: '12px' }}>Transporte</th>
+                            <th style={{ padding: '12px' }}>Estado</th>
+                            <th style={{ padding: '12px' }}>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {shipments.map((s) => (
+                            <tr key={s.trackingCode} style={{ borderBottom: '1px solid #ddd' }}>
+                                <td style={{ padding: '12px' }}>{s.trackingCode}</td>
+                                <td style={{ padding: '12px' }}>{s.carrier}</td>
+                                <td style={{ padding: '12px' }}>{s.status}</td>
+                                <td style={{ padding: '12px' }}>
+                                    <select onChange={(e) => updateStatus(s.trackingCode, e.target.value)}>
+                                        <option value="">Cambiar estado</option>
+                                        <option value="PICKED_UP">Recogido</option>
+                                        <option value="IN_TRANSIT">En Tránsito</option>
+                                        <option value="DELIVERED">Entregado</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </div>
     );
 }
-
-export default ShipmentsPage;

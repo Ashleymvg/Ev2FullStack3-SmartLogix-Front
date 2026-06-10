@@ -1,5 +1,9 @@
-import { getShipmentRequest } from "../api/shipmentApi"
+import { getShipmentsRequest, updateShipmentStatusRequest } from "../api/shipmentApi";
 
 export async function getShipments() {
-    return getShipmentRequest()
+    return await getShipmentsRequest();
+}
+
+export async function updateShipmentStatus(trackingCode, status) {
+    return await updateShipmentStatusRequest(trackingCode, status);
 }
