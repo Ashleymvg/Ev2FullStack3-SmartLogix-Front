@@ -1,16 +1,96 @@
-# React + Vite
+# SmartLogix — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz de usuario para la plataforma de gestión logística de PYMEs eCommerce. Consume servicios del backend vía API Gateway y sigue una arquitectura modular para asegurar escalabilidad y limpieza de código.
 
-Currently, two official plugins are available:
+- React 19
+- Vite 8
+- JavaScript (ES Modules)
+- Docker + Nginx
+- Autenticación JWT
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Tecnologías utilizadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Capa | Tecnología |
+|------|------------|
+| Frontend | React 19 + Vite 8 |
+| Lenguaje | JavaScript (ES Modules) |
+| Estilos | CSS nativo (arquitectura modular) |
+| Contenedor | Docker + Nginx (servidor de producción) |
+| Gestión de sesión | JWT almacenado en `localStorage` |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Arquitectura del proyecto
+
+El proyecto implementa una **arquitectura por capas** para separar responsabilidades y facilitar el mantenimiento:
+
+```
+src/
+├── api/          → Definición de endpoints y peticiones HTTP
+├── service/      → Reglas de negocio y lógica de sesión
+├── pages/        → Vistas de la aplicación (UI)
+├── components/   → Componentes reutilizables
+├── hooks/        → Hooks personalizados para estado y lógica
+└── router/       → Gestión de navegación
+```
+
+---
+
+## Requisitos previos
+
+> ⚠️ El backend de SmartLogix debe estar corriendo en `http://localhost:8080` antes de iniciar el frontend.
+
+- **Node.js:** versión `18` o superior (recomendado `20+`)
+- **Backend:** servicio corriendo en `http://localhost:8080`
+
+---
+
+## Ejecución en desarrollo
+
+**1. Instalar dependencias:**
+
+```bash
+npm install
+```
+
+**2. Iniciar el servidor de desarrollo:**
+
+```bash
+npm run dev
+```
+
+**3.** Acceder a la URL que aparece en la terminal (usualmente `http://localhost:5173`).
+
+---
+
+## Ejecución con Docker (producción)
+
+Este proyecto utiliza un **build multi-stage** para generar una imagen optimizada con Nginx.
+
+**Construir y levantar el contenedor:**
+
+```bash
+docker compose up --build -d
+```
+
+El frontend estará disponible en: `http://localhost:5173`
+
+**Detener el contenedor:**
+
+```bash
+docker compose down
+```
+
+---
+
+## Usuarios de prueba (seeds)
+
+Puedes iniciar sesión con cualquiera de estos perfiles precargados en el backend:
+
+| Usuario | Contraseña | Rol |
+|---------|------------|-----|
+| `admin` | `admin123` | `ROLE_ADMIN` |
+| `usuario` | `user123` | `ROLE_USER` |
+| `bodeguero` | `bodega123` | `ROLE_WAREHOUSE_MANAGER` |
