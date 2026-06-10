@@ -1,5 +1,6 @@
-import { loginRequest } from "../api/authApi"
+import { loginRequest, registerRequest } from "../api/authApi"
 
+// Registra el inicio de sesión enviando los datos limpios al API
 export async function login({ credential, password }) {
     const cleanCredential = credential.trim()
     const cleanPassword = password.trim()
@@ -8,13 +9,30 @@ export async function login({ credential, password }) {
         throw new Error("Ingrese usuario y password")
     }
 
-    // El service aplica reglas de negocio y delega la solicitud HTTP al API.
     return loginRequest({
         credential: cleanCredential,
         password: cleanPassword
     })
 }
 
+// Función para registrar usuarios en el backend
+export async function registerUser({ username, email, password }) {
+    const cleanUsername = username?.trim()
+    const cleanEmail = email?.trim()
+    const cleanPassword = password?.trim()
+
+    if(!cleanUsername || !cleanEmail || !cleanPassword) {
+        throw new Error("Todos los campos son obligatorios para el registro")
+    }
+    
+    return registerRequest({ 
+        username: cleanUsername, 
+        email: cleanEmail, 
+        password: cleanPassword 
+    })
+}
+
+// Guarda los datos devueltos por el backend en el almacenamiento local
 export function saveLoginSession(loginResponse){
     if(!loginResponse?.token){
         throw new Error("El backend no entrego token")

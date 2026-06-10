@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getShipments, updateShipmentStatus } from '../service/shipmentService';
+import { getShipment, updateShipmentStatus } from '../service/shipmentService';
 
 export function useShipments() {
     const [shipments, setShipments] = useState([]);
@@ -9,7 +9,7 @@ export function useShipments() {
     const fetchShipments = async () => {
         setLoading(true);
         try {
-            const data = await getShipments();
+            const data = await getShipment();
             setShipments(data || []);
             setError(null);
         } catch (err) {

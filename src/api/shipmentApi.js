@@ -1,12 +1,28 @@
-import { httpRequest } from "./httpClient";
+import { httpRequest } from "./httpClient"
 
-export function getShipmentsRequest() {
-    return httpRequest("/api/shipments");
+export function getShipmentRequest(authorizationHeader) {
+    return httpRequest("/api/shipments", {
+        headers: { Authorization: authorizationHeader }
+    })
 }
 
-export function updateShipmentStatusRequest(trackingCode, status) {
-    // Es vital que el path y el parámetro query coincidan con el Controller
+export function getShipmentByTrackingRequest(trackingCode, authorizationHeader) {
+    return httpRequest(`/api/shipments/${trackingCode}`, {
+        headers: { Authorization: authorizationHeader }
+    })
+}
+
+export function createShipmentRequest(shipment, authorizationHeader) {
+    return httpRequest("/api/shipments", {
+        method: "POST",
+        headers: { Authorization: authorizationHeader },
+        body: JSON.stringify(shipment)
+    })
+}
+
+export function updateShipmentStatusRequest(trackingCode, status, authorizationHeader) {
     return httpRequest(`/api/shipments/${trackingCode}/status?value=${status}`, {
-        method: "PATCH"
-    });
+        method: "PATCH",
+        headers: { Authorization: authorizationHeader }
+    })
 }

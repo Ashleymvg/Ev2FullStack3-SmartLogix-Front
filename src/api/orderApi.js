@@ -1,12 +1,21 @@
-import { httpRequest } from "./httpClient";
+import { httpRequest } from "./httpClient"
 
-export function getOrdersRequest() {
-    return httpRequest("/api/orders"); 
+export function getOrdersRequest(authorizationHeader) {
+    return httpRequest("/api/orders", {
+        headers: { Authorization: authorizationHeader }
+    })
 }
 
-export function createOrderRequest(orderData) {
+export function getOrderByNumberRequest(orderNumber, authorizationHeader) {
+    return httpRequest(`/api/orders/${orderNumber}`, {
+        headers: { Authorization: authorizationHeader }
+    })
+}
+
+export function createOrderRequest(order, authorizationHeader) {
     return httpRequest("/api/orders", {
         method: "POST",
-        body: JSON.stringify(orderData)
-    });
+        headers: { Authorization: authorizationHeader },
+        body: JSON.stringify(order)
+    })
 }
