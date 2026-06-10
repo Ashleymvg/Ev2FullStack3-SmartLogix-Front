@@ -1,21 +1,15 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import LoginPage from './pages/Login'
-import { clearLogin, getSaveToken } from './service/authService'
 import ShipmentsPage from './pages/Shipments'
 import OrderPage from './pages/Order'
 import InventoryPage from './pages/Inventory'
-
-
-
-const PRIVATE_ROUTER = [
-  { key: "shipment", label: "shipment", hash: "#/shipment" },
-  { key: "order", label: "order", hash: "#/order" },
-  { key: "inventory", label: "inventory", hash: "#/inventory" }
-]
+import DashboardLayout from './layouts/DashboardLayout'
+import { getSaveToken, clearLogin } from './service/authService'
 
 function getRouterFromHash() {
-  return window.location.hash.replace("#/", "")
+  const hash = window.location.hash.replace("#/", "");
+  return hash || "inventory";
 }
 
 function App() {
@@ -27,64 +21,34 @@ function App() {
       setCurrent(getRouterFromHash())
     }
     window.addEventListener("hashchange", handleHashChange)
-    handleHashChange()
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange)
-    }
+    return () => window.removeEventListener("hashchange", handleHashChange)
   }, [])
-
-  function renderPrivate() {
-    if (current === "shipment") {
-      return <ShipmentsPage />
-    }
-
-    if (current === "order") {
-      return <OrderPage />
-    }
-
-    if (current === "inventory") {
-      return <InventoryPage />
-    }
-
-    return <h1>Ruta no encontrada</h1>
-  }
 
   function handleLoginSucces() {
     setIsLogin(true)
+    window.location.hash = "#/inventory"
   }
 
   function handleLogout() {
     clearLogin()
     setIsLogin(false)
+    window.location.hash = "#/"
+  }
+
+  function renderPrivate() {
+    switch (current) {
+      case "shipment": return <ShipmentsPage />
+      case "order": return <OrderPage />
+      case "inventory": return <InventoryPage />
+      default: return <InventoryPage />
+    }
   }
 
   if (isLogin) {
     return (
-      <div>
-        <aside>
-          <div>
-            <div>
-              <h2>Dashboard</h2>
-            </div>
-
-            <nav>
-              {PRIVATE_ROUTER.map((route) => (
-                <a
-                  key={route.key}
-                  href={route.hash}
-                >
-                  <span>{route.label}</span>
-                </a>
-              ))}
-            </nav>
-          </div>
-          
-        </aside>
-
-        <section>
-          {renderPrivate()}
-        </section>
-      </div>
+      <DashboardLayout onLogout={handleLogout}>
+        {renderPrivate()}
+      </DashboardLayout>
     )
   }
 
