@@ -122,7 +122,7 @@ function InventoryPage() {
             <section style={{ flex: 1, border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#fafafa' }}>
                 {!selectedItem ? (
                     <div style={{ textAlign: 'center', color: 'gray', marginTop: '50px' }}>
-                        <h3>👈 Selecciona un producto de la lista</h3>
+                        <h3>Selecciona un producto de la lista</h3>
                         <p>Para ver sus detalles y realizar operaciones.</p>
                     </div>
                 ) : (

@@ -1,56 +1,223 @@
-// Nota: da eror con "import React from 'react';"
+import { useEffect, useState } from "react";
+import { orderService } from "../service/orderService";
+import { inventoryService } from "../service/inventoryService";
 
-import { useOrders } from '../hooks/useOrders';
-import OrderForm from '../components/OrderForm';
+function OrderPage() {
+    const [orders, setOrders] = useState([]);
+    const [inventory, setInventory] = useState([]);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    
+    const [form, setForm] = useState({
+        customerName: "",
+        customerEmail: "",
+        shippingAddress: "",
+        lines: [{ sku: "", quantity: 1, unitPrice: 0 }]
+    });
+    const [message, setMessage] = useState("");
 
-export default function OrderPage() {
-    const { orders, loading, error, addOrder } = useOrders();
+    // 1. CARGA INICIAL AISLADA
+    useEffect(() => {
+        let isMounted = true;
+        async function fetchInitialData() {
+            try {
+                const ordersData = await orderService.fetchOrders();
+                const invData = await inventoryService.fetchItems();
+                if (isMounted) {
+                    setOrders(ordersData);
+                    setInventory(invData);
+                }
+            } catch (err) {
+                if (isMounted) setError(err.message);
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        }
+        fetchInitialData();
+        return () => { isMounted = false; };
+    }, []);
+
+    // 2. FUNCIÓN DE RECARGA SILENCIOSA
+    async function reloadData() {
+        try {
+            const ordersData = await orderService.fetchOrders();
+            setOrders(ordersData);
+            const invData = await inventoryService.fetchItems();
+            setInventory(invData);
+        } catch (err) {
+            console.error("Error recargando los datos:", err);
+        }
+    }
+
+    async function handleSelectOrder(orderNumber) {
+        try {
+            const data = await orderService.fetchOrderByNumber(orderNumber);
+            setSelectedOrder(data);
+        } catch (err) {
+            alert("Error al cargar detalle: " + err.message);
+        }
+    }
+
+    function handleLineChange(index, field, value) {
+        const newLines = form.lines.map((line, i) => {
+            if (i === index) return { ...line, [field]: value };
+            return line;
+        });
+        setForm({ ...form, lines: newLines });
+    }
+
+    function addLine() {
+        setForm({ ...form, lines: [...form.lines, { sku: "", quantity: 1, unitPrice: 0 }] });
+    }
+
+    function removeLine(index) {
+        setForm({ ...form, lines: form.lines.filter((_, i) => i !== index) });
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setMessage("Creando pedido y verificando stock con el almacén...");
+        try {
+            const response = await orderService.createNewOrder(form);
+            setMessage("¡Pedido enviado correctamente al sistema!");
+            setForm({
+                customerName: "",
+                customerEmail: "",
+                shippingAddress: "",
+                lines: [{ sku: "", quantity: 1, unitPrice: 0 }]
+            });
+            await reloadData();
+            if (response && response.orderNumber) {
+                handleSelectOrder(response.orderNumber);
+            }
+        } catch (err) {
+            setMessage("Error: " + err.message);
+        }
+    }
+
+    if (loading && orders.length === 0) return <h3>Cargando módulo de pedidos...</h3>;
+    if (error) return <h3 style={{color: 'red'}}>Error: {error}</h3>;
 
     return (
-        <div>
-            <h1 style={{ color: 'var(--text-h)' }}>Gestión de Órdenes</h1>
-            
-            {error && <p style={{ color: 'red', fontWeight: 'bold' }}>Error: {error}</p>}
-            
-            <OrderForm onSubmit={addOrder} loading={loading} />
-
-            {loading && orders.length === 0 ? (
-                <p>Cargando órdenes...</p>
-            ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', background: '#fff', color: '#333' }}>
-                    <thead>
-                        <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-                            <th style={{ padding: '12px' }}>ID Orden</th>
-                            <th style={{ padding: '12px' }}>ID Cliente</th>
-                            <th style={{ padding: '12px' }}>Estado</th>
-                            <th style={{ padding: '12px' }}>Líneas de Producto</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map((order) => (
-                            <tr key={order.orderNumber} style={{ borderBottom: '1px solid #ddd' }}>
-                                <td style={{ padding: '12px' }}>{order.orderNumber}</td>
-                                <td style={{ padding: '12px' }}>{order.customerId}</td>
-                                <td style={{ padding: '12px', fontWeight: 'bold', color: order.status === 'APPROVED' ? 'green' : 'var(--text-h)' }}>
-                                    {order.status}
-                                </td>
-                                <td style={{ padding: '12px' }}>
-                                    {order.orderLines?.map((line, index) => (
-                                        <div key={index}>
-                                            Prod: {line.productId} | Cant: {line.quantity}
-                                        </div>
+        <main style={{ display: 'flex', gap: '20px' }}>
+            {/* PANEL IZQUIERDO */}
+            <section style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                {/* FORMULARIO DE PEDIDO */}
+                <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', backgroundColor: '#fff', textAlign: 'left' }}>
+                    <h2 style={{ color: '#111111', marginTop: 0, marginBottom: '15px' }}>Crear Nuevo Pedido</h2>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <input placeholder="Nombre del Cliente" value={form.customerName} onChange={(e) => setForm({...form, customerName: e.target.value})} required />
+                        <input placeholder="Email del Cliente" type="email" value={form.customerEmail} onChange={(e) => setForm({...form, customerEmail: e.target.value})} required />
+                        <input placeholder="Dirección de Envío" value={form.shippingAddress} onChange={(e) => setForm({...form, shippingAddress: e.target.value})} required />
+                        
+                        <h4>Productos a solicitar</h4>
+                        {form.lines.map((line, index) => (
+                            <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '5px' }}>
+                                <select value={line.sku} onChange={(e) => handleLineChange(index, "sku", e.target.value)} required style={{ flex: 2, padding: '5px' }}>
+                                    <option value="">-- Seleccione Producto --</option>
+                                    {inventory.map(item => (
+                                        <option key={item.sku} value={item.sku}>{item.sku} - {item.productName} (Disp: {item.availableQuantity})</option>
                                     ))}
-                                </td>
-                            </tr>
+                                </select>
+                                <input type="number" placeholder="Cant" min="1" value={line.quantity} onChange={(e) => handleLineChange(index, "quantity", e.target.value)} style={{ width: '60px', padding: '5px' }} required />
+                                <input type="number" placeholder="Precio" min="0" value={line.unitPrice} onChange={(e) => handleLineChange(index, "unitPrice", e.target.value)} style={{ width: '80px', padding: '5px' }} required />
+                                <button type="button" onClick={() => removeLine(index)} disabled={form.lines.length === 1} style={{ backgroundColor: '#dc3545', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '4px' }}>X</button>
+                            </div>
                         ))}
-                        {orders.length === 0 && (
-                            <tr>
-                                <td colSpan="4" style={{ padding: '12px', textAlign: 'center' }}>No hay órdenes registradas.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            )}
-        </div>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                            <button type="button" onClick={addLine} style={{ backgroundColor: '#6c757d', color: '#fff', cursor: 'pointer', border: 'none', padding: '8px 15px', borderRadius: '4px' }}>+ Añadir Producto</button>
+                            <button type="submit" style={{ backgroundColor: '#007bff', color: '#fff', cursor: 'pointer', border: 'none', padding: '8px 15px', borderRadius: '4px' }}>Generar Orden</button>
+                        </div>
+                    </form>
+                    {message && <p style={{ marginTop: '10px', fontWeight: 'bold', color: '#007bff' }}>{message}</p>}
+                </div>
+
+                {/* HISTORIAL */}
+                <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', backgroundColor: '#fff', textAlign: 'left' }}>
+                    <h2 style={{ color: '#111111', marginTop: 0, marginBottom: '15px' }}>Historial de Pedidos</h2>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {orders.map(o => (
+                            <li key={o.orderNumber} onClick={() => handleSelectOrder(o.orderNumber)} style={{ padding: '12px', borderBottom: '1px solid #eee', cursor: 'pointer', backgroundColor: selectedOrder?.orderNumber === o.orderNumber ? '#e6f7ff' : 'transparent' }}>
+                                <strong>{o.orderNumber}</strong> - {o.totalAmount ? `$${Number(o.totalAmount).toLocaleString()}` : 'Calculando...'}
+                                <span style={{ 
+                                    float: 'right', 
+                                    padding: '2px 8px', 
+                                    borderRadius: '4px', 
+                                    fontSize: '12px', 
+                                    background: o.status === 'SHIPMENT_REQUESTED' || o.status === 'APPROVED' ? '#d4edda' : '#fff3cd', 
+                                    color: o.status === 'SHIPMENT_REQUESTED' || o.status === 'APPROVED' ? '#155724' : '#856404' 
+                                }}>
+                                    {o.status === 'FAILED' ? 'PENDIENTE LOGÍSTICA' : o.status}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </section>
+
+            {/* PANEL DERECHO (DETALLE) */}
+            <section style={{ flex: 0.8, border: '1px solid #ddd', borderRadius: '8px', padding: '15px', backgroundColor: '#fafafa', textAlign: 'left' }}>
+                {!selectedOrder ? (
+                    <div style={{ textAlign: 'center', color: 'gray', marginTop: '100px' }}>
+                        <h3>Selecciona un pedido</h3>
+                        <p>Para ver el desglose completo de ítems, estado de orquestación y el tracking asignado por el backend.</p>
+                    </div>
+                ) : (
+                    <div>
+                        <h2 style={{ color: '#111111', marginTop: 0 }}>Desglose de la Orden</h2>
+                        <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #eee', lineHeight: '1.6' }}>
+                            <p><strong>N° Orden:</strong> {selectedOrder.orderNumber}</p>
+                            <p><strong>Estado:</strong> 
+                                <span style={{ fontWeight: 'bold', marginLeft: '5px', color: selectedOrder.status === 'FAILED' ? '#f0ad4e' : '#007bff' }}>
+                                    {selectedOrder.status === 'FAILED' ? 'PENDIENTE' : selectedOrder.status}
+                                </span>
+                            </p>
+                            <p><strong>Total Facturado:</strong> ${Number(selectedOrder.totalAmount || 0).toLocaleString()}</p>
+                            
+                            <p><strong>Código de Tracking:</strong> 
+                                {selectedOrder.trackingCode ? (
+                                    <span style={{color: 'green', fontWeight: 'bold', marginLeft: '5px'}}>{selectedOrder.trackingCode}</span>
+                                ) : (
+                                    <span style={{color: '#856404', fontWeight: '500', marginLeft: '5px'}}>Esperando asignación en Centro de Distribución</span>
+                                )}
+                            </p>
+
+                            {selectedOrder.status === 'FAILED' && (
+                                <div style={{ color: '#856404', background: '#fff3cd', border: '1px solid #ffeeba', padding: '12px', borderRadius: '6px', marginTop: '15px', fontSize: '13.5px' }}>
+                                    💡 <strong>Flujo de Excepción Logística:</strong> El pedido fue aprobado y los artículos ya están **reservados** en el inventario. Sin embargo, el transportista automático no está respondiendo. Este caso requiere que vayas al módulo de <strong>Envíos</strong> para realizar una <strong>Asignación Manual</strong>.
+                                </div>
+                            )}
+
+                            <p style={{ fontSize: '12px', color: 'gray', marginTop: '15px' }}>Fecha Registro: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                        </div>
+
+                        <h3 style={{ marginTop: '20px', color: '#111111' }}>Productos Solicitados</h3>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}>
+                            <thead>
+                                <tr style={{ backgroundColor: '#f1f1f1', textAlign: 'left' }}>
+                                    <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>SKU</th>
+                                    <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Cant</th>
+                                    <th style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>Precio Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {selectedOrder.lines?.map((l, i) => (
+                                    <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                                        <td style={{ padding: '8px' }}>{l.sku}</td>
+                                        <td style={{ padding: '8px' }}>{l.quantity}</td>
+                                        <td style={{ padding: '8px' }}>${Number(l.unitPrice).toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+        </main>
     );
 }
+
+export default OrderPage;

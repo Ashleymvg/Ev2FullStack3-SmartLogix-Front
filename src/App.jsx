@@ -61,13 +61,13 @@ function App() {
         <p style={{fontSize: '12px', color: 'gray'}}>{currentUser?.role}</p>
         
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-          <a href="#/inventory">📦 Inventario</a>
+          <a href="#/inventory">Inventario</a>
           
           {/* Solo Admin y Usuarios normales gestionan pedidos */}
-          {!isBodeguero && <a href="#/order">🛒 Pedidos</a>}
+          {!isBodeguero && <a href="#/order">Pedidos</a>}
           
           {/* Todos pueden ver envíos, pero el rol define qué acciones tienen luego */}
-          <a href="#/shipment">🚚 Envíos</a>
+          <a href="#/shipment">Envíos</a>
         </nav>
 
         <button onClick={() => { clearLogin(); setIsLogin(false) }} style={{ marginTop: '50px' }}>

@@ -1,28 +1,22 @@
 import { httpRequest } from "./httpClient"
 
-export function getShipmentRequest(authorizationHeader) {
-    return httpRequest("/api/shipments", {
-        headers: { Authorization: authorizationHeader }
-    })
-}
-
-export function getShipmentByTrackingRequest(trackingCode, authorizationHeader) {
-    return httpRequest(`/api/shipments/${trackingCode}`, {
-        headers: { Authorization: authorizationHeader }
-    })
-}
-
-export function createShipmentRequest(shipment, authorizationHeader) {
-    return httpRequest("/api/shipments", {
-        method: "POST",
-        headers: { Authorization: authorizationHeader },
-        body: JSON.stringify(shipment)
-    })
-}
-
-export function updateShipmentStatusRequest(trackingCode, status, authorizationHeader) {
-    return httpRequest(`/api/shipments/${trackingCode}/status?value=${status}`, {
-        method: "PATCH",
-        headers: { Authorization: authorizationHeader }
-    })
-}
+export const shipmentApi = {
+    getAll: (token) => 
+        httpRequest("/api/shipments", { headers: { Authorization: token } }),
+    
+    getByTracking: (trackingCode, token) => 
+        httpRequest(`/api/shipments/${trackingCode}`, { headers: { Authorization: token } }),
+    
+    createManual: (shipmentData, token) => 
+        httpRequest("/api/shipments", {
+            method: "POST",
+            body: JSON.stringify(shipmentData),
+            headers: { Authorization: token }
+        }),
+    
+    updateStatus: (trackingCode, newStatus, token) => 
+        httpRequest(`/api/shipments/${trackingCode}/status?value=${newStatus}`, {
+            method: "PATCH",
+            headers: { Authorization: token }
+        })
+};

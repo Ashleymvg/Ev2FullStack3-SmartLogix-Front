@@ -1,49 +1,28 @@
-import {
-    getShipmentRequest,
-    getShipmentByTrackingRequest,
-    createShipmentRequest,
-    updateShipmentStatusRequest
-} from "../api/shipmentApi"
+import { shipmentApi } from "../api/shipmentApi"
 import { getRequiredAuthorizationHeader } from "./authService"
 
-export const SHIPMENT_STATUSES = ["PLANNED", "PICKED_UP", "IN_TRANSIT", "DELIVERED"]
-
-export async function getShipment() {
-    const authorizationHeader = getRequiredAuthorizationHeader()
-    return getShipmentRequest(authorizationHeader)
-}
-
-export async function getShipmentByTracking(trackingCode) {
-    const cleanCode = trackingCode?.trim()
-    if (!cleanCode) {
-        throw new Error("El codigo de tracking es obligatorio")
+export const shipmentService = {
+    fetchShipments: async () => {
+        return await shipmentApi.getAll(getRequiredAuthorizationHeader());
+    },
+    fetchShipmentByTracking: async (trackingCode) => {
+        if (!trackingCode?.trim()) throw new Error("El código de tracking es obligatorio");
+        return await shipmentApi.getByTracking(trackingCode.trim(), getRequiredAuthorizationHeader());
+    },
+    createManualShipment: async ({ orderNumber, destinationAddress, totalUnits }) => {
+        if (!orderNumber?.trim() || !destinationAddress?.trim()) {
+            throw new Error("El número de orden y la dirección son obligatorios");
+        }
+        const units = Number(totalUnits) >= 1 ? Number(totalUnits) : 1;
+        return await shipmentApi.createManual({
+            orderNumber: orderNumber.trim(),
+            destinationAddress: destinationAddress.trim(),
+            totalUnits: units
+        }, getRequiredAuthorizationHeader());
+    },
+    changeStatus: async (trackingCode, status) => {
+        const validStatuses = ["PLANNED", "PICKED_UP", "IN_TRANSIT", "DELIVERED"];
+        if (!validStatuses.includes(status)) throw new Error("Estado no válido");
+        return await shipmentApi.updateStatus(trackingCode, status, getRequiredAuthorizationHeader());
     }
-    const authorizationHeader = getRequiredAuthorizationHeader()
-    return getShipmentByTrackingRequest(cleanCode, authorizationHeader)
-}
-
-export async function createShipment({ orderNumber, destinationAddress, totalUnits }) {
-    const cleanOrder = orderNumber?.trim()
-    const cleanAddress = destinationAddress?.trim()
-
-    if (!cleanOrder || !cleanAddress) {
-        throw new Error("Numero de orden y direccion de destino son obligatorios")
-    }
-
-    const units = Number(totalUnits) >= 1 ? Number(totalUnits) : 1
-
-    const authorizationHeader = getRequiredAuthorizationHeader()
-    return createShipmentRequest({
-        orderNumber: cleanOrder,
-        destinationAddress: cleanAddress,
-        totalUnits: units
-    }, authorizationHeader)
-}
-
-export async function updateShipmentStatus(trackingCode, status) {
-    if (!SHIPMENT_STATUSES.includes(status)) {
-        throw new Error("Estado de envio no valido")
-    }
-    const authorizationHeader = getRequiredAuthorizationHeader()
-    return updateShipmentStatusRequest(trackingCode, status, authorizationHeader)
-}
+};
