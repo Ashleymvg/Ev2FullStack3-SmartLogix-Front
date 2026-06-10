@@ -1,5 +1,9 @@
-import { getOrdersRequest } from "../api/orderApi"
+import { getOrdersRequest, createOrderRequest } from "../api/orderApi";
 
 export async function getOrders() {
-    return getOrdersRequest()
+    return await getOrdersRequest();
+}
+
+export async function createOrder(orderData) {
+    return await createOrderRequest(orderData);
 }
