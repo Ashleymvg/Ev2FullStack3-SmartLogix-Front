@@ -3,6 +3,10 @@
 **Caso:** SmartLogix
 **Integrantes:** Mirko Lucic / Ashley Vargas
 
+> **DUOC UC**
+> Asignatura: Desarrollo Fullstack III — Semestre 01 2026
+> Profesor: Anyelo Castellon Rios
+
 ---
 
 ## 1. Introducción
