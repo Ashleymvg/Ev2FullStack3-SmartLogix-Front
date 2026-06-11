@@ -4,18 +4,13 @@ import { inventoryService } from "../service/inventoryService";
 function InventoryPage() {
     const [inventory, setInventory] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
-    
-    // El estado inicial ya es "cargando", así que no necesitamos hacer un setState sincrónico
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    
     const [actionQty, setActionQty] = useState(1);
     const [actionMessage, setActionMessage] = useState("");
 
-    // 1. EFECTO DE CARGA INICIAL (Totalmente aislado para el linter)
     useEffect(() => {
         let isMounted = true;
-
         async function fetchInitialData() {
             try {
                 const data = await inventoryService.fetchItems();
@@ -26,15 +21,10 @@ function InventoryPage() {
                 if (isMounted) setLoading(false);
             }
         }
-
         fetchInitialData();
-
-        return () => {
-            isMounted = false; // Evita fugas de memoria si el componente se desmonta
-        };
+        return () => { isMounted = false; };
     }, []);
 
-    // 2. FUNCIÓN PARA EL BOTÓN "REFRESCAR" MANUALMENTE
     async function handleRefresh() {
         setLoading(true);
         setError("");
@@ -48,7 +38,6 @@ function InventoryPage() {
         }
     }
 
-    // 3. CARGAR DETALLES DE UN ITEM ESPECÍFICO
     async function handleSelectItem(sku) {
         setActionMessage("");
         setActionQty(1);
@@ -60,7 +49,6 @@ function InventoryPage() {
         }
     }
 
-    // 4. MANEJAR ACCIONES DE INVENTARIO
     async function handleAction(type) {
         if (!selectedItem) return;
         setActionMessage("Procesando...");
@@ -70,8 +58,6 @@ function InventoryPage() {
             if (type === 'dispatch') await inventoryService.dispatchItem(selectedItem.sku, actionQty);
             
             setActionMessage(`¡Acción '${type}' exitosa!`);
-            
-            // Recargamos silenciosamente los datos
             const newData = await inventoryService.fetchItems();
             setInventory(newData);
             handleSelectItem(selectedItem.sku);
@@ -80,19 +66,15 @@ function InventoryPage() {
         }
     }
 
-    // --- RENDERIZADO DE LA PANTALLA ---
-
     if (loading && inventory.length === 0) return <h3>Cargando inventario...</h3>;
     if (error) return <h3 style={{color: 'red'}}>Error: {error}</h3>;
 
     return (
         <main style={{ display: 'flex', gap: '20px', height: '100%' }}>
-            
-            {/* PANEL IZQUIERDO: MAESTRO (Lista) */}
             <section style={{ flex: 1, border: '1px solid #ddd', borderRadius: '8px', padding: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2>Catálogo de Productos</h2>
-                    <button onClick={handleRefresh}>🔄 Refrescar</button>
+                    <button onClick={handleRefresh} style={{ padding: '8px 12px', cursor: 'pointer' }}>🔄 Refrescar</button>
                 </div>
                 
                 <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -106,11 +88,12 @@ function InventoryPage() {
                                 border: '1px solid #eee', 
                                 borderRadius: '5px',
                                 cursor: 'pointer',
-                                backgroundColor: selectedItem?.sku === item.sku ? '#e6f7ff' : '#fff'
+                                backgroundColor: selectedItem?.sku === item.sku ? '#e6f7ff' : '#fff',
+                                color: '#3d2b5e'
                             }}
                         >
                             <strong>{item.sku}</strong> - {item.productName}
-                            <div style={{ fontSize: '14px', color: 'gray', marginTop: '5px' }}>
+                            <div style={{ fontSize: '14px', color: '#6b6375', marginTop: '5px' }}>
                                 Stock: {item.availableQuantity} | Bodega: {item.warehouseCode}
                             </div>
                         </li>
@@ -118,7 +101,6 @@ function InventoryPage() {
                 </ul>
             </section>
 
-            {/* PANEL DERECHO: DETALLE Y ACCIONES */}
             <section style={{ flex: 1, border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#fafafa' }}>
                 {!selectedItem ? (
                     <div style={{ textAlign: 'center', color: 'gray', marginTop: '50px' }}>
@@ -127,18 +109,18 @@ function InventoryPage() {
                     </div>
                 ) : (
                     <div>
-                        <h2>Detalle del Producto</h2>
-                        <div style={{ background: '#fff', padding: '15px', borderRadius: '5px', border: '1px solid #ccc' }}>
+                        <h2 style={{ color: '#111111' }}>Detalle del Producto</h2>
+                        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ccc', color: '#3d2b5e', fontSize: '16px', lineHeight: '1.6' }}>
                             <p><strong>SKU:</strong> {selectedItem.sku}</p>
                             <p><strong>Nombre:</strong> {selectedItem.productName}</p>
                             <p><strong>Bodega:</strong> {selectedItem.warehouseCode}</p>
                             <p><strong>Stock Disponible:</strong> <span style={{color: 'green', fontWeight: 'bold'}}>{selectedItem.availableQuantity}</span></p>
                             <p><strong>Stock Reservado:</strong> <span style={{color: 'orange', fontWeight: 'bold'}}>{selectedItem.reservedQuantity}</span></p>
                             <p><strong>Punto de Reorden:</strong> {selectedItem.reorderLevel}</p>
-                            <p style={{fontSize: '12px', color: 'gray'}}>Última act: {new Date(selectedItem.updatedAt).toLocaleString()}</p>
+                            <p style={{fontSize: '13px', color: 'gray', marginTop: '10px'}}>Última act: {new Date(selectedItem.updatedAt).toLocaleString()}</p>
                         </div>
 
-                        <h3 style={{ marginTop: '20px' }}>Operaciones Manuales</h3>
+                        <h3 style={{ marginTop: '20px', color: '#111111' }}>Operaciones Manuales</h3>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <input 
                                 type="number" 
@@ -153,7 +135,7 @@ function InventoryPage() {
                         </div>
 
                         {actionMessage && (
-                            <div style={{ marginTop: '15px', padding: '10px', background: '#e9ecef', borderRadius: '5px' }}>
+                            <div style={{ marginTop: '15px', padding: '10px', background: '#e9ecef', borderRadius: '5px', color: '#3d2b5e', fontWeight: 'bold' }}>
                                 {actionMessage}
                             </div>
                         )}

@@ -8,7 +8,7 @@ import OrderPage from './pages/Order'
 import InventoryPage from './pages/Inventory'
 
 function getRouterFromHash() {
-  return window.location.hash.replace("#/", "") || "inventory" // Por defecto a inventory
+  return window.location.hash.replace("#/", "") || "inventory" 
 }
 
 function App() {
@@ -41,41 +41,43 @@ function App() {
   if (!isLogin) {
     return showRegister ? 
       <RegisterPage onSwitchToLogin={() => setShowRegister(false)} /> : 
-      <div style={{ maxWidth: '400px', margin: '0 auto', paddingTop: '50px'}}>
+      <div style={{ maxWidth: '400px', margin: '0 auto', paddingTop: '15vh'}}>
         <LoginPage handleLoginSucces={handleLoginSuccess} />
-        <button onClick={() => setShowRegister(true)} style={{ marginTop: '10px', width: '100%' }}>
-          Crear una cuenta nueva
+        <button 
+          onClick={() => setShowRegister(true)} 
+          style={{ 
+            marginTop: '20px', width: '100%', background: 'none', border: 'none', 
+            color: '#c084fc', textDecoration: 'underline', cursor: 'pointer', fontSize: '15px' 
+          }}
+        >
+          ¿No tienes cuenta? Regístrate aquí
         </button>
       </div>
   }
 
-  // Lógica de roles para el menú
-  //const isAdmin = currentUser?.role === "ROLE_ADMIN"
   const isBodeguero = currentUser?.role === "ROLE_WAREHOUSE_MANAGER"
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={{ width: '250px', padding: '20px', borderRight: '1px solid #ccc' }}>
-        <h2>SmartLogix</h2>
-        <p>Hola, <strong>{currentUser?.username}</strong></p>
-        <p style={{fontSize: '12px', color: 'gray'}}>{currentUser?.role}</p>
+      <aside style={{ width: '250px', padding: '20px', borderRight: '1px solid #3d2b5e', textAlign: 'left' }}>
+        <h2 style={{color: '#c084fc', fontSize: '32px', margin: '0 0 10px 0'}}>SmartLogix</h2>
+        <p style={{color: '#e5e4e7'}}>Hola, <strong style={{color: '#c084fc'}}>{currentUser?.username}</strong></p>
+        <p style={{fontSize: '12px', color: '#a0a0a0', marginBottom: '30px'}}>{currentUser?.role}</p>
         
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-          <a href="#/inventory">Inventario</a>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <a href="#/inventory" style={{color: 'white', textDecoration: 'none', fontSize: '22px'}}>Inventario</a>
           
-          {/* Solo Admin y Usuarios normales gestionan pedidos */}
-          {!isBodeguero && <a href="#/order">Pedidos</a>}
+          {!isBodeguero && <a href="#/order" style={{color: 'white', textDecoration: 'none', fontSize: '22px'}}>Pedidos</a>}
           
-          {/* Todos pueden ver envíos, pero el rol define qué acciones tienen luego */}
-          <a href="#/shipment">Envíos</a>
+          <a href="#/shipment" style={{color: 'white', textDecoration: 'none', fontSize: '22px'}}>Envíos</a>
         </nav>
 
-        <button onClick={() => { clearLogin(); setIsLogin(false) }} style={{ marginTop: '50px' }}>
+        <button onClick={() => { clearLogin(); setIsLogin(false) }} style={{ marginTop: '50px', background: '#ff6b6b', color: 'white', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}>
           Cerrar Sesión
         </button>
       </aside>
 
-      <section style={{ flex: 1, padding: '20px' }}>
+      <section style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
         {renderPrivate()}
       </section>
     </div>
