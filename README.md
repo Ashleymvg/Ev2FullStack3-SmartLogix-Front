@@ -1,4 +1,4 @@
-# SmartLogix — Frontend
+# Evaluacion 2 - SmartLogix - Frontend 
 
 Interfaz de usuario para la plataforma de gestión logística de PYMEs eCommerce. Consume servicios del backend vía API Gateway y sigue una arquitectura modular para asegurar escalabilidad y limpieza de código.
 
