@@ -1,5 +1,3 @@
-// Nota: Da error con "import React from 'react';""
-
 const PRIVATE_ROUTER = [
   { key: "inventory", label: "Inventario", hash: "#/inventory" },
   { key: "order", label: "Órdenes de Compra", hash: "#/order" },
@@ -9,9 +7,23 @@ const PRIVATE_ROUTER = [
 export default function DashboardLayout({ children, onLogout }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', textAlign: 'left' }}>
-      
+
       <aside style={{ width: '250px', borderRight: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+
         <h2>SmartLogix</h2>
+
+        <div
+          style={{
+            marginTop: '10px',
+            padding: '10px',
+            background: '#f0f8ff',
+            borderRadius: '6px',
+            fontWeight: 'bold'
+          }}
+        >
+          LogixPoints: 1500
+        </div>
+
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '30px' }}>
           {PRIVATE_ROUTER.map((route) => (
             <a key={route.key} href={route.hash} style={{ textDecoration: 'none', color: 'var(--text-h)', fontWeight: '500' }}>
@@ -20,12 +32,21 @@ export default function DashboardLayout({ children, onLogout }) {
           ))}
         </nav>
 
-        <button 
-          onClick={onLogout} 
-          style={{ marginTop: 'auto', background: 'var(--accent)', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', cursor: 'pointer' }}
+        <button
+          onClick={onLogout}
+          style={{
+            marginTop: 'auto',
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+            padding: '10px',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
         >
           Cerrar Sesión
         </button>
+
       </aside>
 
       <section style={{ flex: 1, padding: '32px', backgroundColor: 'var(--code-bg)' }}>
